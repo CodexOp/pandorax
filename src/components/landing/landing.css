@@ -1,0 +1,209 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+
+body{
+    font-family: 'Poppins', sans-serif;
+}
+
+.landing{
+    width: 700px;
+    background: rgba(255,255,255,0.05);
+    margin: auto;
+    margin-top: 40px !important;
+    border-radius: 10px;
+}
+
+.progressbar-container{
+    background:rgba(255,255,255,0.1);
+    border-radius: 50px;
+}
+
+
+.progressbar-container:before {
+    content: attr(data-label);
+    font-size: 0.8em;
+    vertical-align: 0;
+    font-size: 15px;
+    padding-left: 10px;
+    /*Position text over the progress bar */
+    position:absolute;
+
+  }
+
+
+.stak_box{
+    padding: 40px 50px;
+}
+
+
+.all_buttons{
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    width: 80%;
+    margin-top: 40px !important;
+    gap:10px;
+    margin: auto;
+}
+
+
+.text-blue{
+    color:#20A7DB;
+}
+
+.all_buttons button{
+padding: 15px 20px;
+width: 40%;  
+}
+
+.stak_heading h2{
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.stak_info p{
+    color: #fff;
+    font-size: 22px;
+}
+
+
+.stak_info{
+    margin-top:20px;
+}
+
+.inputs{
+    margin-top: 20px;
+}
+
+.inputbox label{
+font-size: 18px;
+}
+
+.inputbox input{
+   width: 100%;
+   height: 40px;
+   outline: none;
+   border: none;
+   padding-left: 10px;
+   font-size: 16px;
+   margin: 10px 0;
+   
+
+}
+    
+
+
+.input1{
+    position: relative;
+
+}
+
+.maxToken{
+    position: absolute;
+    top:10px;
+    z-index: 11;
+    right:0px;
+    font-weight: bold;
+    color: #fff;
+    padding: 10px 20px;
+    cursor: pointer;
+    display: flex;
+    background-color: #20A7DB;
+    align-items: center;
+   
+
+}
+
+.greenButton{
+    background-color: #20A7DB;
+    border:1px solid rgba(255,255,255,0.3);
+    border-radius: 10px;
+    color:#fff;
+    font-weight: bold;
+    font-size: 16px;
+
+}
+
+
+.redbutton{
+ background-color: #ff0000;
+    border:1px solid rgba(255,255,255,0.3);
+    border-radius: 10px;
+    font-weight: bold;
+    color:#fff;
+    font-size: 16px;
+}
+
+
+@media(max-width:763px){
+    .landing{
+        width: 100%;
+        margin-top: 0 !important;
+        padding-top: 20px;
+        
+    }
+
+    .stak_heading{
+        margin-bottom: 40px;
+    }
+
+    .logo_container{
+        margin-left: 10px;
+    }
+
+    .connect_wallet_container{
+        margin-right: 10px;
+
+    }
+}
+
+
+@media(max-width:500px){
+    
+.all_buttons{
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    width: 100%;
+    margin-top: 40px !important;
+    gap:10px;
+    margin: auto;
+}
+
+
+.all_buttons button{
+    padding: 10px 10px;
+    width: 48%;  
+    }
+
+    
+
+}
+
+
+
+
+@media(max-width:400px){
+    .all_buttons button{
+        padding: 10px 0px;
+        width: 48%;  
+        }
+
+        .stak_box{
+            padding: 40px 30px;
+        }
+
+        .logo_container h2{
+            display: none;
+        }
+        
+        .logo_container{
+            margin-left: 20px;
+        }
+
+        
+    .connect_wallet_container{
+        margin-right: 20px;
+
+    }
+}
