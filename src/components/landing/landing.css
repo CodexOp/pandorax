@@ -5,6 +5,74 @@ body{
     font-family: 'Poppins', sans-serif;
 }
 
+
+.navbar_outer{
+    height: 100px;
+    width: 100%;
+    background: rgba(255,255,255,0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    
+}
+
+
+
+
+.logo_container{
+    margin-left: 50px;
+    display: flex;
+    align-items: center;
+}
+
+
+
+.logo_container h2{
+    font-size: 26px;
+}
+
+.connect_wallet_container{
+    margin-right: 50px;
+}
+
+.connect_wallet_container button{
+    font-weight: 500;
+}
+
+.logo{
+    width: 70px;
+}
+
+
+
+.wallet{
+    padding: 15px 30px;
+    border-radius: 10px;
+    outline: none;
+    border:none;
+    background: #20A7DB;
+    color: #fff;
+    font-size: 16px;
+    font-weight: bold !important;
+    cursor: pointer;
+}
+
+
+@media(max-width:500px){
+    .wallet{
+        padding: 8px 20px;
+        border-radius: 10px;
+        outline: none;
+        border:none;
+    }
+
+    .logo_container h2{
+        font-size: 18px;
+    }
+}
+
+
 .landing{
     width: 700px;
     background: rgba(255,255,255,0.05);
@@ -101,11 +169,10 @@ font-size: 18px;
 .maxToken{
     position: absolute;
     top:10px;
-    z-index: 11;
     right:0px;
     font-weight: bold;
     color: #fff;
-    padding: 10px 20px;
+    padding: 8px 20px;
     cursor: pointer;
     display: flex;
     background-color: #20A7DB;
@@ -121,6 +188,7 @@ font-size: 18px;
     color:#fff;
     font-weight: bold;
     font-size: 16px;
+    cursor: pointer;
 
 }
 
@@ -132,6 +200,8 @@ font-size: 18px;
     font-weight: bold;
     color:#fff;
     font-size: 16px;
+    cursor: pointer;
+
 }
 
 
