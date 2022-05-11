@@ -20,12 +20,10 @@ const Landing = () => {
   let [userInfo, setUserInfo] = React.useState([]);
   let [whitelistedAddresses, setWalletAddresses] = React.useState([]);
   let [amount, setAmount] = React.useState(0);
-
-  const poolData= [
-    {name: "DIAMOND",apy: "120", lock:"90", maxStake: "200,000", fee: "25", maxPool:"15m"},
-    {name: "GOLD",apy: "60", lock:"60", maxStake: "1,000,000", fee: "25", maxPool:"20m"},
-    {name: "BRONZE",apy: "20", lock:"30", maxStake: "2,000,000", fee: "25", maxPool:"20m"}
-  ]
+  let [balance, setBalance] = React.useState(0);
+  let [stakingBalance, setStackingBalance] = React.useState(0);
+  let [currentPoolSize, setCurrentPoolSize] = React.useState(0);
+  let [timeLock, setTimeLock] = React.useState(0);
 
   let [_signer, _setSigner]= React.useState(0);
   let [_provider, _setProvider]= React.useState(0);
@@ -34,7 +32,7 @@ const Landing = () => {
 
   React.useEffect(() => {
     web3ModalRef.current = new Web3Modal({
-      network: "rinkeby",
+      network: "binance",
       providerOptions: {
         walletconnect: {
           package: WalletConnectProvider, // required
@@ -46,7 +44,7 @@ const Landing = () => {
         }
       },
     });
-
+    connectWallet();
 
   }, []);
 
@@ -54,6 +52,17 @@ const Landing = () => {
     getPoolInfo();
     getUserInfo();
     getWhiteListAddresses();
+    
+    async function fetch (){
+      try{
+        let _balance = await _getBalance(values.token);
+        console.log("BAlance", _balance);
+        setBalance(_balance);
+      }catch (err){
+        console.log("Error", err);
+      }
+    }
+    fetch();
   }, [_provider, _signer, poolId]);
 
   async function getPoolInfo (){
@@ -68,6 +77,9 @@ const Landing = () => {
       var _poolInfo = await staking.poolInfo(poolId);
       console.log ("Pool Info: ", _poolInfo);
       setPoolInfo(_poolInfo);
+      let temp = ethers.utils.formatEther(_poolInfo[2].toString()).toString()
+      console.log ("temp: ", temp, " value: ", _poolInfo[2].toString());
+      setCurrentPoolSize(temp);
     }catch(err){
       console.log(err);
     }
@@ -85,9 +97,38 @@ const Landing = () => {
       let _wallet = _signer.getAddress();      
       let _userInfo = await staking.userInfo( poolId, _wallet);
       console.log ("USER Info: ", _userInfo);
+      setStackingBalance(ethers.utils.formatEther(_userInfo[0]).toString())
       setUserInfo(_userInfo);
+      let _timestamp = parseInt(_userInfo[1].toString())* 1000;
+      let _time = new Date(_timestamp);
+      if (_timestamp >0) setTimeLock(_time);
+      else setTimeLock(" Not staked yet");
     }catch(err){
       console.log("User error", err);
+    }
+  }
+
+  async function _getBalance (tokenAddress, accountAddress){
+    try {
+      let rpcUrl = values.rpcUrl;
+      let provider_ = new ethers.providers.JsonRpcProvider(rpcUrl);
+      let token = new ethers.Contract(
+        tokenAddress,
+        tokenAbi,
+        provider_
+      );
+      if (!accountAddress){
+        accountAddress = await _signer.getAddress();
+      }
+      let balance = await token.balanceOf (accountAddress);
+      console.log ("Balalala", balance)
+      let decimals = await token.decimals();
+      decimals = parseInt(decimals.toString());
+      balance = ethers.utils.formatUnits(balance, decimals);
+      return parseFloat(balance.toString()).toFixed(2);
+    } catch (err){
+      console.log (err, tokenAddress);
+      return 0;
     }
   }
 
@@ -119,6 +160,8 @@ const Landing = () => {
       let _amount = ethers.utils.parseEther(amount.toString());
       // console.log (_amount)
       let tx = await staking.stakeTokens(poolId, _amount);
+      getPoolInfo();
+      getUserInfo();
     }catch (error) {
       alert(error.data.message);
       // console.log (error)
@@ -160,25 +203,39 @@ const Landing = () => {
       );
       let _amount = ethers.utils.parseEther("10000000000000000000");
       let tx = await token.approve(values.stakingAddress, _amount);
+      stakeTokens()
     }catch (error) {
-      alert(error.data.message);
+      // alert(error.data.message);
     }
-  }
-
-  const onclickhandlers = (e) => { 
-    console.log(e.target.value);
-    setPoolId(parseInt(e.target.value));
   }
 
   function handleChange(event) {
     const { name, value } = event.target;
-    if (name === "tokenAmount") setAmount(value);
+    setAmount(value);
+    // console.log (amount);
+  }
+
+  function disconnectWallet () {
+    try{
+      
+      web3ModalRef.current.clearCachedProvider();
+      setConnectedWallet(false);
+      setBalance(0);
+      setWalletAddress("Connect")
+      setStackingBalance(0);
+      setTimeLock(0)
+      _setProvider("");
+      _setSigner("");
+    }catch(err){
+      console.log(err);
+    }
   }
 
 
   const connectWallet = async () => {
     try {
-      await getSignerOrProvider(true);
+      if (!connectedWallet) await getSignerOrProvider(true);
+      else disconnectWallet();
     } catch (error) {
       console.log(" error Bhai", error);
     }
@@ -228,13 +285,14 @@ return (
                 <h2>STAKE YOUR TOKEN</h2>
             </div>
             <div className='stak_bar'>
-            <Progress color="#20A7DB" completed={75} height={20} data-label={`75% Pool Filled`}/>
+            {/* <Progress color="#20A7DB" completed={75} height={20} data-label={`75% Pool Filled`}/> */}
             </div>
             {/* <Timer /> */}
             <div className='stak_info'>
             <p>Estimated APY : <span className='text-blue'>{`330.36%`}</span></p>
-            <p>My Balance : <span className='text-blue'>{`$345`}</span> </p>
-            <p>My Stakable Balance :  <span className='text-blue'>{`$315`}</span></p>
+            <p>My Balance : <span className='text-blue'>{balance}</span> </p>
+            <p>My Staked Balance :  <span className='text-blue'>{stakingBalance}</span></p>
+            <p>Lock Deadline :  <span className='text-blue'>{timeLock.toString()}</span></p>
             </div>  
 
             <div className='inputs'>
@@ -244,31 +302,32 @@ return (
             <label>Stake Your Token</label>
             </div>
             <div className="input1">
-            <input placeholder='Enter Token Amount' type="number" />
+            <input placeholder='Enter Token Amount' onChange= {(e)=> handleChange(e)} value= {amount} type="number" />
                 <div className='maxToken'>
-                <p>MAX</p>
+                <p onClick= {()=> setAmount(balance)} >MAX</p>
                 </div>
                 </div>
                 <div className='inputbox'>
-                <div>
+                {/* <div>
                 <label>Staked Token</label>
                 </div>
-                <input placeholder={`Show Staked Amount`} readOnly/>
+                <input placeholder={`Show Staked Amount`} readOnly/> */}
             </div>
             </div>
             </div>
 
 
             <div className='stak_info'>
-            <p>Claimable Token : <span className='text-blue'>{`330.36%`}</span> </p>
-            <p>My Total Claimed Token : <span className='text-blue'>{`632123`}</span></p>
-            <p>Unstake Fee : <span className='text-blue'>{`0%`}</span></p>
+            {/* <p>Claimable Token : <span className='text-blue'>{`330.36%`}</span> </p>
+            <p>My Total Claimed Token : <span className='text-blue'>{`632123`}</span></p> */}
+            <p>Current Pool Size :  <span className='text-blue'>{currentPoolSize}</span></p>
+            <p>Unstake Fee : <span className='text-blue'>{`15%`}</span></p>
             </div>
             <div className='all_buttons'>
-                <button className='greenButton'>STAKE</button>
-                <button className='greenButton'>CLAIM</button>
-                <button className='greenButton'>UNSTAKE</button>
-                <button className='redbutton'>EMERGENCY UNSTAKE</button>
+                <button className='greenButton' onClick={approve} >Stake</button>
+                {/* <button className='greenButton'>CLAIM</button> */}
+                <button className='greenButton' onClick={unstakeTokens} >Unstake</button>
+                <button className='redbutton' onClick={emergencyWithdraw} >Emergency Withdraw</button>
             </div>
             </div>
     </div>
