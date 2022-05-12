@@ -44,6 +44,7 @@ const Landing = () => {
         }
       },
     });
+
     connectWallet();
 
   }, []);
@@ -215,10 +216,10 @@ const Landing = () => {
     // console.log (amount);
   }
 
-  function disconnectWallet () {
+  async function disconnectWallet () {
     try{
       
-      web3ModalRef.current.clearCachedProvider();
+      await web3ModalRef.current.clearCachedProvider();
       setConnectedWallet(false);
       setBalance(0);
       setWalletAddress("Connect")
@@ -253,6 +254,11 @@ const Landing = () => {
       //   alert("USE RINKEEBY NETWORK");
       //   throw new Error("Change network to Rinkeby");
       // }
+
+      if (chainId != 56){
+        switchNetwork(web3Provider);
+      }
+
       if (needSigner) {
         const signer = web3Provider.getSigner();
         _setSigner(signer)
@@ -270,6 +276,44 @@ const Landing = () => {
       _setProvider(provider);
     }
   };
+
+  async function switchNetwork (library) {
+    try {
+      await library.provider.request({
+        method: "wallet_switchEthereumChain",
+        params: [{ chainId: ethers.utils.hexlify(56) }],
+      });
+      console.log ("HIhIHIHIHIHI")
+      
+    } catch (switchError) {
+        console.log ("HIIIIIIIIIIIIIIIII", switchError)
+        // This error code indicates that the chain has not been added to MetaMask.
+      if (switchError.code === 4902) {
+        try {
+          await library.provider.request({
+            method: "wallet_addEthereumChain",
+            params: [
+              {
+                chainId: ethers.utils.hexlify(56),
+                chainName: "Binance Network",
+                nativeCurrency: {
+                  name: "Binance",
+                  symbol: "BNB", // 2-6 characters long
+                  decimals: 18
+                },
+                rpcUrls: ["https://bsc-dataseed.binance.org/"],
+                blockExplorerUrls: ["https://bscscan.com"],
+              },
+            ],
+          });
+        } catch (addError) {
+          throw addError;
+        }
+      }
+    }
+  }
+
+
 return (
   <div>
   <div className='navbar_outer'>
