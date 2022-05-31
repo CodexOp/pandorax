@@ -15,7 +15,7 @@ import tokenAbi from '../../abi/token.json';
 const Landing = () => {
   let [connectedWallet, setConnectedWallet] = React.useState(false);
   let [walletAddress, setWalletAddress] = React.useState("Connect");
-  let [poolId, setPoolId] = React.useState(0);
+  let [poolId, setPoolId] = React.useState(1);
   let [poolInfo, setPoolInfo] = React.useState([]);
   let [userInfo, setUserInfo] = React.useState([]);
   let [whitelistedAddresses, setWalletAddresses] = React.useState([]);
@@ -24,15 +24,18 @@ const Landing = () => {
   let [stakingBalance, setStackingBalance] = React.useState(0);
   let [currentPoolSize, setCurrentPoolSize] = React.useState(0);
   let [timeLock, setTimeLock] = React.useState(0);
+  let [maxPoolSize, setMaxPoolSize] = React.useState(0);
+
 
   let [_signer, _setSigner]= React.useState(0);
   let [_provider, _setProvider]= React.useState(0);
-  const web3ModalRef = React.useRef(); // return the object with key named current
+  const [web3ModalRef, setWeb3ModalRef] = React.useState(""); // return the object with key named current
 
 
   React.useEffect(() => {
-    web3ModalRef.current = new Web3Modal({
+    let _web3ModalRef = new Web3Modal({
       network: "binance",
+      cacheProvider: false,
       providerOptions: {
         walletconnect: {
           package: WalletConnectProvider, // required
@@ -44,8 +47,13 @@ const Landing = () => {
         }
       },
     });
+    setWeb3ModalRef(_web3ModalRef);
+    // let web3 = new Web3Modal({});
+    // web3.cachedProvider()
 
-    connectWallet();
+    // connectWallet();
+    // web3ModalRef.clearCachedProvider();
+    // console.log ( "Hellow", _web3ModalRef.cachedProvider)
 
   }, []);
 
@@ -78,9 +86,11 @@ const Landing = () => {
       var _poolInfo = await staking.poolInfo(poolId);
       console.log ("Pool Info: ", _poolInfo);
       setPoolInfo(_poolInfo);
-      let temp = ethers.utils.formatEther(_poolInfo[2].toString()).toString()
+      let temp = ethers.utils.formatUnits(_poolInfo[2].toString(), 5).toString()
       console.log ("temp: ", temp, " value: ", _poolInfo[2].toString());
       setCurrentPoolSize(temp);
+      temp = ethers.utils.formatUnits(_poolInfo[1].toString(), 5).toString()
+      setMaxPoolSize(temp)
     }catch(err){
       console.log(err);
     }
@@ -98,7 +108,7 @@ const Landing = () => {
       let _wallet = _signer.getAddress();      
       let _userInfo = await staking.userInfo( poolId, _wallet);
       console.log ("USER Info: ", _userInfo);
-      setStackingBalance(ethers.utils.formatEther(_userInfo[0]).toString())
+      setStackingBalance(ethers.utils.formatUnits(_userInfo[0], 5).toString())
       setUserInfo(_userInfo);
       let _timestamp = parseInt(_userInfo[1].toString())* 1000;
       let _time = new Date(_timestamp);
@@ -158,9 +168,10 @@ const Landing = () => {
         stakingAbi,
         _signer
       );
-      let _amount = ethers.utils.parseEther(amount.toString());
-      // console.log (_amount)
+      let _amount = ethers.utils.parseUnits(amount.toString(), 5);
+      console.log (_amount.toString())
       let tx = await staking.stakeTokens(poolId, _amount);
+      await tx.wait()
       getPoolInfo();
       getUserInfo();
     }catch (error) {
@@ -177,6 +188,9 @@ const Landing = () => {
         _signer
       );
       let tx = await staking.unstakeTokens(poolId);
+      await tx.wait()
+      getPoolInfo();
+      getUserInfo();
     }catch (error) {
       alert(error.data.message);
     }
@@ -190,6 +204,9 @@ const Landing = () => {
         _signer
       );
       let tx = await staking.emergencyWithdraw(poolId);
+      await tx.wait()
+      getPoolInfo();
+      getUserInfo();
     }catch (error) {
       alert (error.data.message);
     }
@@ -203,10 +220,17 @@ const Landing = () => {
         _signer
       );
       let _amount = ethers.utils.parseEther("10000000000000000000");
-      let tx = await token.approve(values.stakingAddress, _amount);
+      console.log ("walletAddress", walletAddress)
+      let _allowance = await token.allowance(walletAddress, values.stakingAddress);
+      console.log ("Allowance: " + _allowance)
+      if (_allowance.toString().length < 3){
+        let _tx = await token.approve(values.stakingAddress, _amount);
+        await _tx.wait();
+      }
       stakeTokens()
     }catch (error) {
       // alert(error.data.message);
+      console.log (error)
     }
   }
 
@@ -219,7 +243,7 @@ const Landing = () => {
   async function disconnectWallet () {
     try{
       
-      await web3ModalRef.current.clearCachedProvider();
+      await web3ModalRef.clearCachedProvider();
       setConnectedWallet(false);
       setBalance(0);
       setWalletAddress("Connect")
@@ -246,7 +270,7 @@ const Landing = () => {
     try{
       const _provider = new providers.JsonRpcProvider(values.rpcUrl);
       _setProvider(_provider);
-      const provider = await web3ModalRef.current.connect();
+      const provider = await web3ModalRef.connect();
       const web3Provider = new providers.Web3Provider(provider);
       const { chainId } = await web3Provider.getNetwork();
       console.log ("ChainId: ", chainId);
@@ -329,11 +353,11 @@ return (
                 <h2>STAKE YOUR TOKEN</h2>
             </div>
             <div className='stak_bar'>
-            {/* <Progress color="#20A7DB" completed={75} height={20} data-label={`75% Pool Filled`}/> */}
+            <Progress color="#20A7DB" completed={(parseFloat(currentPoolSize)* 100)/parseFloat(maxPoolSize)} height={20} data-label={`${(parseFloat(currentPoolSize)* 100)/parseFloat(maxPoolSize)}% Pool Filled`} />
             </div>
             {/* <Timer /> */}
             <div className='stak_info'>
-            <p>Estimated APY : <span className='text-blue'>{`330.36%`}</span></p>
+            <p>Estimated APY : <span className='text-blue'>{`200%`}</span></p>
             <p>My Balance : <span className='text-blue'>{balance}</span> </p>
             <p>My Staked Balance :  <span className='text-blue'>{stakingBalance}</span></p>
             <p>Lock Deadline :  <span className='text-blue'>{timeLock.toString()}</span></p>
