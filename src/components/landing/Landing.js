@@ -251,6 +251,7 @@ const Landing = () => {
       setTimeLock(0)
       _setProvider("");
       _setSigner("");
+      window.localStorage.clear();
     }catch(err){
       console.log(err);
     }
