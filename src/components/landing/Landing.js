@@ -213,6 +213,14 @@ const Landing = () => {
   }
 
   async function approve () {
+    if(amount > 1000){
+      alert("Amount cannot be greater than 1000");
+      return;
+    }
+    else if(amount <= 0){
+      alert("Amount cannot be less than or equal to 0");
+      return;
+    }
     try{
       let token = new ethers.Contract(
         values.token,
@@ -368,7 +376,7 @@ return (
          
             <div className='inputbox'>
             <div>
-            <label>Stake Your Token</label>
+            <label>Stake Your Token &#40;max staking amount: 1000 tokens&#41;</label>
             </div>
             <div className="input1">
             <input placeholder='Enter Token Amount' onChange= {(e)=> handleChange(e)} value= {amount} type="number" />
