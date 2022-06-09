@@ -381,7 +381,7 @@ return (
             <div className="input1">
             <input placeholder='Enter Token Amount' onChange= {(e)=> handleChange(e)} value= {amount} type="number" />
                 <div className='maxToken'>
-                <p onClick= {()=> setAmount(balance)} >MAX</p>
+                <p onClick= {()=> setAmount(Math.min(balance, 1000))} >MAX</p>
                 </div>
                 </div>
                 <div className='inputbox'>
